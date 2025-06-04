@@ -7,9 +7,41 @@ let users = [
     { id: 3, name: "Carlos López", email: "carlos@example.com", age: 28 }
 ];
 
-// GET - Obtener todos los usuarios
-export async function GET() {
-    return NextResponse.json(users);
+// GET - Obtener usuarios con filtros
+export async function GET(request) {
+    const { searchParams } = new URL(request.url);
+    const minAge = searchParams.get('minAge') ? parseInt(searchParams.get('minAge')) : null;
+    const maxAge = searchParams.get('maxAge') ? parseInt(searchParams.get('maxAge')) : null;
+    const name = searchParams.get('name');
+    const email = searchParams.get('email');
+
+    let filteredUsers = [...users];
+
+    // Filtrar por edad mínima
+    if (minAge !== null) {
+        filteredUsers = filteredUsers.filter(u => u.age >= minAge);
+    }
+
+    // Filtrar por edad máxima
+    if (maxAge !== null) {
+        filteredUsers = filteredUsers.filter(u => u.age <= maxAge);
+    }
+
+    // Filtrar por nombre (búsqueda parcial, no sensible a mayúsculas/minúsculas)
+    if (name) {
+        filteredUsers = filteredUsers.filter(u => 
+            u.name.toLowerCase().includes(name.toLowerCase())
+        );
+    }
+
+    // Filtrar por email (búsqueda parcial, no sensible a mayúsculas/minúsculas)
+    if (email) {
+        filteredUsers = filteredUsers.filter(u => 
+            u.email.toLowerCase().includes(email.toLowerCase())
+        );
+    }
+
+    return NextResponse.json(filteredUsers);
 }
 
 // POST - Crear un nuevo usuario
